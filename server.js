@@ -176,3 +176,46 @@ async function removeEmployee() {
       runApp();
   })
 };
+
+
+// Change the employee's manager. Also prevents employee from being their own manager
+async function updateManager() {
+  let employees = await db.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee');
+  employees.push({ id: null, name: "Cancel" });
+
+  inquirer.prompt([
+      {
+          name: "empName",
+          type: "list",
+          message: "For which employee?",
+          choices: employees.map(obj => obj.name)
+      }
+  ]).then(employeeInfo => {
+      if (employeeInfo.empName == "Cancel") {
+          runApp();
+          return;
+      }
+      let managers = employees.filter(currEmployee => currEmployee.name != employeeInfo.empName);
+      for (i in managers) {
+          if (managers[i].name === "Cancel") {
+              managers[i].name = "None";
+          }
+      };
+
+      inquirer.prompt([
+          {
+              name: "mgName",
+              type: "list",
+              message: "Change their manager to:",
+              choices: managers.map(obj => obj.name)
+          }
+      ]).then(managerInfo => {
+          let empID = employees.find(obj => obj.name === employeeInfo.empName).id
+          let mgID = managers.find(obj => obj.name === managerInfo.mgName).id
+          db.query("UPDATE employee SET manager_id=? WHERE id=?", [mgID, empID]);
+          console.log("\x1b[32m", `${employeeInfo.empName} now reports to ${managerInfo.mgName}`);
+          runApp();
+      })
+  })
+};
+
