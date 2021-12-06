@@ -35,3 +35,44 @@ const db = new Database({
   password: "r1gBy1997",
   database: "cmsDB"
 });
+
+function runApp() {
+  inquirer.prompt({
+      name: "mainmenu",
+      type: "list",
+      message: "What would you like to do?",
+      choices: [
+          "View All Employees",
+          "Edit Employeee Info",
+          "View Roles",
+          "Edit Roles",
+          "View Departments",
+          "Edit Departments",
+          "Exit"
+      ]
+  }).then(responses => {
+      switch (responses.mainmenu) {
+          case "View All Employees":
+              showEmployeeSummary();
+              break;
+          case "Edit Employeee Info":
+              editEmployeeOptions();
+              break;
+          case "View Roles":
+              showRoleSummary();
+              break;
+          case "Edit Roles":
+              editRoleOptions();
+              break;
+          case "View Departments":
+              showDepartments();
+              break;
+          case "Edit Departments":
+              editDepartmentOptions();
+              break;
+          case "Exit":
+              db.close();
+              break;
+      }
+  });
+}
