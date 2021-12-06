@@ -333,3 +333,64 @@ async function updateRole() {
   })
 };
 
+
+// Remove a role from the database
+async function removeRole() {
+  let roles = await db.query('SELECT id, title FROM role');
+  roles.push({ id: null, title: "Cancel" });
+
+  inquirer.prompt([
+      {
+          name: "roleName",
+          type: "list",
+          message: "Remove which role?",
+          choices: roles.map(obj => obj.title)
+      }
+  ]).then(response => {
+      if (response.roleName != "Cancel") {
+          let noMoreRole = roles.find(obj => obj.title === response.roleName);
+          db.query("DELETE FROM role WHERE id=?", noMoreRole.id);
+          console.log("\x1b[32m", `${response.roleName} was removed. Please reassign associated employees.`);
+      }
+      runApp();
+  })
+};
+
+// Add a new department to the database
+async function addDepartment() {
+  inquirer.prompt([
+      {
+          name: "depName",
+          type: "input",
+          message: "Enter new department:",
+          validate: confirmStringInput
+      }
+  ]).then(answers => {
+      db.query("INSERT INTO department (name) VALUES (?)", [answers.depName]);
+      console.log("\x1b[32m", `${answers.depName} was added to departments.`);
+      runApp();
+  })
+};
+
+// Remove a department from the database
+async function removeDepartment() {
+  let departments = await db.query('SELECT id, name FROM department');
+  departments.push({ id: null, name: "Cancel" });
+
+  inquirer.prompt([
+      {
+          name: "depName",
+          type: "list",
+          message: "Remove which department?",
+          choices: departments.map(obj => obj.name)
+      }
+  ]).then(response => {
+      if (response.depName != "Cancel") {
+          let uselessDepartment = departments.find(obj => obj.name === response.depName);
+          db.query("DELETE FROM department WHERE id=?", uselessDepartment.id);
+          console.log("\x1b[32m", `${response.depName} was removed. Please reassign associated roles.`);
+      }
+      runApp();
+  })
+};
+
