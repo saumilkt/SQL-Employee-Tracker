@@ -36,6 +36,7 @@ const db = new Database({
   database: "cmsDB"
 });
 
+// Main interface loop. Called after pretty much every function completes
 function runApp() {
   inquirer.prompt({
       name: "mainmenu",
@@ -484,3 +485,4 @@ function editDepartmentOptions() {
   })
 };
 
+runApp();
