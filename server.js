@@ -286,3 +286,50 @@ async function addRole() {
   })
 };
 
+
+// Updates a role on the database
+async function updateRole() {
+  let roles = await db.query('SELECT id, title FROM role');
+  roles.push({ id: null, title: "Cancel" });
+  let departments = await db.query('SELECT id, name FROM department');
+
+  inquirer.prompt([
+      {
+          name: "roleName",
+          type: "list",
+          message: "Update which role?",
+          choices: roles.map(obj => obj.title)
+      }
+  ]).then(response => {
+      if (response.roleName == "Cancel") {
+          runApp();
+          return;
+      }
+      inquirer.prompt([
+          {
+              name: "salaryNum",
+              type: "input",
+              message: "Enter role's salary:",
+              validate: input => {
+                  if (!isNaN(input)) {
+                      return true;
+                  }
+                  return "Please enter a valid number."
+              }
+          },
+          {
+              name: "roleDepartment",
+              type: "list",
+              message: "Choose the role's department:",
+              choices: departments.map(obj => obj.name)
+          }
+      ]).then(answers => {
+          let depID = departments.find(obj => obj.name === answers.roleDepartment).id
+          let roleID = roles.find(obj => obj.title === response.roleName).id
+          db.query("UPDATE role SET title=?, salary=?, department_id=? WHERE id=?", [response.roleName, answers.salaryNum, depID, roleID]);
+          console.log("\x1b[32m", `${response.roleName} was updated.`);
+          runApp();
+      })
+  })
+};
+
