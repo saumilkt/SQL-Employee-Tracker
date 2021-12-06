@@ -394,3 +394,37 @@ async function removeDepartment() {
   })
 };
 
+
+// Options to make changes to employees specifically
+function editEmployeeOptions() {
+  inquirer.prompt({
+      name: "editChoice",
+      type: "list",
+      message: "What would you like to update?",
+      choices: [
+          "Add A New Employee",
+          "Change Employee Role",
+          "Change Employee Manager",
+          "Remove An Employee",
+          "Return To Main Menu"
+      ]
+  }).then(response => {
+      switch (response.editChoice) {
+          case "Add A New Employee":
+              addEmployee();
+              break;
+          case "Change Employee Role":
+              updateEmployeeRole();
+              break;
+          case "Change Employee Manager":
+              updateManager();
+              break;
+          case "Remove An Employee":
+              removeEmployee();
+              break;
+          case "Return To Main Menu":
+              runApp();
+              break;
+      }
+  })
+};
