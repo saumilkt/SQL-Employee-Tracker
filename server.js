@@ -107,7 +107,6 @@ async function showDepartments() {
   })
 };
 
-
 // Called inside inquirers to check that the user isn't just trying to fill spots with empty space
 async function confirmStringInput(input) {
   if ((input.trim() != "") && (input.trim().length <= 30)) {
@@ -154,4 +153,26 @@ async function addEmployee() {
       console.log("\x1b[32m", `${answers.firstName} was added to the employee database!`);
       runApp();
   });
+};
+
+// Removes an employee from the database
+async function removeEmployee() {
+  let employees = await db.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee');
+  employees.push({ id: null, name: "Cancel" });
+
+  inquirer.prompt([
+      {
+          name: "employeeName",
+          type: "list",
+          message: "Remove which employee?",
+          choices: employees.map(obj => obj.name)
+      }
+  ]).then(response => {
+      if (response.employeeName != "Cancel") {
+          let unluckyEmployee = employees.find(obj => obj.name === response.employeeName);
+          db.query("DELETE FROM employee WHERE id=?", unluckyEmployee.id);
+          console.log("\x1b[32m", `${response.employeeName} was let go...`);
+      }
+      runApp();
+  })
 };
