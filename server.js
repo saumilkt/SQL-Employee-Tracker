@@ -219,3 +219,70 @@ async function updateManager() {
   })
 };
 
+
+// Updates the selected employee's role
+async function updateEmployeeRole() {
+  let employees = await db.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee');
+  employees.push({ id: null, name: "Cancel" });
+  let roles = await db.query('SELECT id, title FROM role');
+
+  inquirer.prompt([
+      {
+          name: "empName",
+          type: "list",
+          message: "For which employee?",
+          choices: employees.map(obj => obj.name)
+      },
+      {
+          name: "newRole",
+          type: "list",
+          message: "Change their role to:",
+          choices: roles.map(obj => obj.title)
+      }
+  ]).then(answers => {
+      if (answers.empName != "Cancel") {
+          let empID = employees.find(obj => obj.name === answers.empName).id
+          let roleID = roles.find(obj => obj.title === answers.newRole).id
+          db.query("UPDATE employee SET role_id=? WHERE id=?", [roleID, empID]);
+          console.log("\x1b[32m", `${answers.empName} new role is ${answers.newRole}`);
+      }
+      runApp();
+  })
+};
+
+// Add a new role to the database
+async function addRole() {
+  let departments = await db.query('SELECT id, name FROM department');
+
+  inquirer.prompt([
+      {
+          name: "roleName",
+          type: "input",
+          message: "Enter new role title:",
+          validate: confirmStringInput
+      },
+      {
+          name: "salaryNum",
+          type: "input",
+          message: "Enter role's salary:",
+          validate: input => {
+              if (!isNaN(input)) {
+                  return true;
+              }
+              return "Please enter a valid number."
+          }
+      },
+      {
+          name: "roleDepartment",
+          type: "list",
+          message: "Choose the role's department:",
+          choices: departments.map(obj => obj.name)
+      }
+  ]).then(answers => {
+      let depID = departments.find(obj => obj.name === answers.roleDepartment).id
+      db.query("INSERT INTO role (title, salary, department_id) VALUES (?)", [[answers.roleName, answers.salaryNum, depID]]);
+      console.log("\x1b[32m", `${answers.roleName} was added. Department: ${answers.roleDepartment}`);
+      runApp();
+  })
+};
+
